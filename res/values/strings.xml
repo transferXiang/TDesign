@@ -2,7 +2,9 @@
 <resources>
 
     <string name="app_name">TDesign</string>
-    <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="map_common">普通地图</string>
+    <string name="map_satellite">卫星地图</string>
+    <string name="map_traffic_on">交通状况（开）</string>
+    <string name="map_traffic_off">交通状况（关）</string>
 
 </resources>

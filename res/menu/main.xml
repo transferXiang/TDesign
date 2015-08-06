@@ -1,9 +1,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/id_map_common"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:title="@string/map_common"/>
+    <item
+        android:id="@+id/id_map_satellite"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/map_satellite"/>
+    <item
+        android:id="@+id/id_map_traffic"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/map_traffic_off"/>
 
 </menu>
