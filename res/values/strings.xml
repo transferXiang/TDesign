@@ -6,5 +6,6 @@
     <string name="map_satellite">卫星地图</string>
     <string name="map_traffic_on">交通状况（开）</string>
     <string name="map_traffic_off">交通状况（关）</string>
+    <string name="map_location">定位</string>
 
 </resources>

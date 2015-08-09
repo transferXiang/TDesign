@@ -29,6 +29,9 @@ public class MainActivity extends Activity {
 	private MyLocationListenr mLocationListener;
 	private boolean isFirstIn = true;
 	
+	private double mLatitude;
+	private double mLongtitude;
+	
 	Context context;
 	
 	
@@ -122,12 +125,25 @@ public class MainActivity extends Activity {
 			item.setTitle(enable ? R.string.map_traffic_off : R.string.map_traffic_on);
 			break;
 			
+		case R.id.id_map_location:
+			toMyLocation();
+			break;
+			
 		default:
 			Log.d("MainActivity.onOptionsItemSelected", "unknown item type");
 			break;
 		}
     	return super.onOptionsItemSelected(item);
     }
+
+    /**
+     * 移动到我的位置
+     */
+	private void toMyLocation() {
+		LatLng latLng = new LatLng(mLatitude, mLongtitude);
+		MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(latLng);
+		mBaiduMap.animateMapStatus(msu);
+	}
     
     
     private class MyLocationListenr implements BDLocationListener
@@ -142,11 +158,12 @@ public class MainActivity extends Activity {
 			.build();
 			mBaiduMap.setMyLocationData(data);
 			
+			mLatitude = location.getLatitude();
+			mLongtitude = location.getLongitude();
+			
 			// 第一次进入应用时才进行定位
 			if(isFirstIn){
-				LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-				MapStatusUpdate msu = MapStatusUpdateFactory.newLatLng(latLng);
-				mBaiduMap.animateMapStatus(msu);
+				toMyLocation();
 				
 				isFirstIn = false;
 				Toast.makeText(context, location.getAddrStr(), Toast.LENGTH_SHORT).show();
