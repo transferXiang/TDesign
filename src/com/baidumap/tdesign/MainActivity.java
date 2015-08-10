@@ -7,11 +7,16 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MyLocationConfiguration;
+import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
+import com.baidumap.tdesign.MyOrientationListener.OnOrientationListener;
 
 import android.os.Bundle;
 import android.app.Activity;
@@ -32,7 +37,11 @@ public class MainActivity extends Activity {
 	private double mLatitude;
 	private double mLongtitude;
 	
-	Context context;
+	private BitmapDescriptor mIconLocation;
+	private MyOrientationListener mMyOrientationListener;
+	private float mCurrentX;
+	
+	private Context mContex;
 	
 	
     @Override
@@ -43,14 +52,17 @@ public class MainActivity extends Activity {
         //注意该方法要再setContentView方法之前实现  
         SDKInitializer.initialize(getApplicationContext()); 
         
-        context = this;
+        mContex = this;
         
         setContentView(R.layout.activity_main);
         
-        mMapView = (MapView) findViewById(R.id.bmapView);
-        mBaiduMap = mMapView.getMap();
+        initView();
         
-        mLocaltionClient = new LocationClient(this);
+        initLocation();  
+    }
+
+	private void initLocation() {
+		mLocaltionClient = new LocationClient(this);
         mLocationListener = new MyLocationListenr();
         mLocaltionClient.registerLocationListener(mLocationListener);
         
@@ -60,7 +72,25 @@ public class MainActivity extends Activity {
         option.setOpenGps(true);
         option.setScanSpan(1000); //1s中扫描一次
         mLocaltionClient.setLocOption(option);
-    }
+        
+        // 自定义图标
+        mIconLocation = BitmapDescriptorFactory.fromResource(R.drawable.gps_arrow);
+        
+        // 添加listener，监听坐标发生变化
+        mMyOrientationListener = new MyOrientationListener(mContex);
+        mMyOrientationListener.setOnOrientationListener(new OnOrientationListener() {
+			
+			@Override
+			public void onOrientationChanged(float x) {
+				mCurrentX = x;
+			}
+		});
+	}
+
+	private void initView() {
+		mMapView = (MapView) findViewById(R.id.bmapView);
+        mBaiduMap = mMapView.getMap();
+	}
 
     @Override
     protected void onDestroy() {
@@ -82,23 +112,31 @@ public class MainActivity extends Activity {
     
     @Override
     protected void onStart() {
+    	super.onStart();
+    	
     	// 开启定位
     	mBaiduMap.setMyLocationEnabled(true);
     	if(!mLocaltionClient.isStarted()){
     		mLocaltionClient.start();
     	}
     	
-    	super.onStart();
+    	// 开启方向传感器
+    	mMyOrientationListener.Start();
     }
     
     @Override
     protected void onStop() {
+    	super.onStop();
+    	
     	// 停止定位
     	if(mLocaltionClient.isStarted()){
     		mLocaltionClient.stop();
     	}
     	mBaiduMap.setMyLocationEnabled(false);
-    	super.onStop();
+    	
+    	// 关闭方向传感器
+    	mMyOrientationListener.Stop();
+    	
     }
 
     @Override
@@ -152,11 +190,16 @@ public class MainActivity extends Activity {
 		@Override
 		public void onReceiveLocation(BDLocation location) {
 			MyLocationData data = new MyLocationData.Builder()//
+			.direction(mCurrentX)//
 			.accuracy(location.getRadius())//
 			.latitude(location.getLatitude())//
 			.longitude(location.getLongitude())//
 			.build();
 			mBaiduMap.setMyLocationData(data);
+			
+			// 设置定位的自定义图标
+			MyLocationConfiguration config = new MyLocationConfiguration(LocationMode.NORMAL, true, mIconLocation);
+			mBaiduMap.setMyLocationConfigeration(config);
 			
 			mLatitude = location.getLatitude();
 			mLongtitude = location.getLongitude();
@@ -166,7 +209,7 @@ public class MainActivity extends Activity {
 				toMyLocation();
 				
 				isFirstIn = false;
-				Toast.makeText(context, location.getAddrStr(), Toast.LENGTH_SHORT).show();
+				Toast.makeText(mContex, location.getAddrStr(), Toast.LENGTH_SHORT).show();
 			}
 		}
     	
